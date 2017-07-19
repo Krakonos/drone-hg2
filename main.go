@@ -11,6 +11,8 @@ import (
 var version string // build number set at compile-time
 
 func main() {
+	fmt.Println("This is drone-hg2 plugin version %s", version)
+
 	app := cli.NewApp()
 	app.Name = "my plugin"
 	app.Usage = "my plugin usage"
@@ -125,10 +127,30 @@ func main() {
 			Usage:  "build event",
 			EnvVar: "DRONE_BUILD_EVENT",
 		},
+		cli.StringFlag{
+			Name:   "netrc.machine",
+			Usage:  "netrc machine",
+			EnvVar: "DRONE_NETRC_MACHINE",
+		},
+		cli.StringFlag{
+			Name:   "netrc.username",
+			Usage:  "netrc username",
+			EnvVar: "DRONE_NETRC_USERNAME",
+		},
+		cli.StringFlag{
+			Name:   "netrc.password",
+			Usage:  "netrc password",
+			EnvVar: "DRONE_NETRC_PASSWORD",
+		},
 		cli.IntFlag{
 			Name:   "build.number",
 			Usage:  "build number",
 			EnvVar: "DRONE_BUILD_NUMBER",
+		},
+		cli.StringFlag{
+			Name:   "build.workspace",
+			Usage:  "build workspace",
+			EnvVar: "DRONE_WORKSPACE",
 		},
 		cli.IntFlag{
 			Name:   "build.created",
@@ -209,6 +231,7 @@ func run(c *cli.Context) {
 		},
 		Build: Build{
 			Number:   c.Int("build.number"),
+			Workspace: c.String("build.workspace"),
 			Event:    c.String("build.event"),
 			Status:   c.String("build.status"),
 			Deploy:   c.String("build.deploy"),
@@ -233,9 +256,16 @@ func run(c *cli.Context) {
 		Config: Config{
 		// plugin-specific parameters
 		},
+		Netrc: Netrc {
+			Machine:  c.String("netrc.machine"),
+			Username: c.String("netrc.username"),
+			Password: c.String("netrc.password"),
+		},
 	}
 
-	if err := plugin.Exec(); err != nil {
+	err := plugin.Exec()
+
+	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
